@@ -109,7 +109,6 @@ class LinearRegression:
         self.target_label_ = y.columns[0]
         self.is_fitted_ = True
 
-
     def predict(self, X):
         if not hasattr(self, "is_fitted_"):
             raise ValueError("LinearRegression is not fitted")
