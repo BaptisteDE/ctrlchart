@@ -157,6 +157,7 @@ class EWMAChart:
         m1p: float,
         pom_0: int = 370,
         intercept: bool = False,
+        tz=None,
     ):
         self.m0 = m0
         self.m1 = m1
@@ -166,6 +167,7 @@ class EWMAChart:
         self.lambda_ewma_ = 0.54
         self.l_ = 2.98
         self.intercept = intercept
+        self.tz = tz
         self.reset()
 
     def __repr__(self):
@@ -197,7 +199,7 @@ class EWMAChart:
         return repr_string
 
     def reset(self):
-        self.zi = pd.Series([self.m0], index=[pd.Timestamp("1970-01-01")])
+        self.zi = pd.Series([self.m0], index=[pd.Timestamp("1970-01-01", tz=self.tz)])
 
     def fit(self, X: pd.DataFrame | pd.Series, y: pd.DataFrame | pd.Series):
         X = check_and_return_dt_index_df(X)
