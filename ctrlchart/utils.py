@@ -1,7 +1,28 @@
-import numpy as np
 import pandas as pd
-
 import numpy as np
+
+
+def check_and_return_dt_index_df(X: pd.Series | pd.DataFrame) -> pd.DataFrame:
+    if not (isinstance(X, pd.Series) or isinstance(X, pd.DataFrame)):
+        raise ValueError(
+            f"Invalid X data, was expected an instance of pandas Dataframe "
+            f"or Pandas Series. Got {type(X)}"
+        )
+
+    if not isinstance(X.index, pd.DatetimeIndex):
+        raise ValueError("Index is not a pandas DateTimeIndex")
+
+    return X.to_frame() if isinstance(X, pd.Series) else X
+
+
+def find_closest_value(df, pom, delta_1):
+    x_vals = df.columns.values
+    y_vals = df.index.values
+
+    closest_x = x_vals[np.argmin(np.abs(x_vals - pom))]
+    closest_y = y_vals[np.argmin(np.abs(y_vals - delta_1))]
+
+    return df.loc[closest_y, closest_x]
 
 
 def ols_regression(x: np.ndarray, y: np.ndarray):
@@ -137,7 +158,7 @@ def model_projection_uncertainty(
     Examples
     --------
     >>> import pandas as pd
-    >>> from ctrlchart.tools import model_projection_uncertainty
+    >>> from ctrlchart.utils import model_projection_uncertainty
     >>> x_train = pd.Series([1, 2, 3, 4, 5])
     >>> x_pred = pd.Series([2, 3, 4])
     >>> y_true = pd.Series([2, 2.5, 3])
@@ -301,7 +322,7 @@ def cv_rmse(y_pred: pd.Series, y_true: pd.Series, ddof: int = 1) -> float:
     Examples
     --------
     >>> import pandas as pd
-    >>> from ctrlchart.tools import cv_rmse
+    >>> from ctrlchart.utils import cv_rmse
     >>> y_true = pd.Series([100, 102, 98, 101])
     >>> y_pred = pd.Series([98, 100, 95, 99])
     >>> cv_rmse(y_pred, y_true)

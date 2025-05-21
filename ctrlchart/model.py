@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from ctrlchart.tools import ols_regression, nmbe, rmse, cv_rmse, umod
+from ctrlchart.utils import ols_regression, nmbe, rmse, cv_rmse, umod
 
 
 class LinearRegression:
