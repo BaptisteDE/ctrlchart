@@ -10,8 +10,13 @@ class EWMAChart:
         self.m1 = m1
         self.m1p = m1p
         self.u_mes = 0
-        self.lambda_ewma = 0.4
+        self.lambda_ewma = 0.15
+        self.L = 2.80
         self.intercept = intercept
+        self.reset()
+
+    def reset(self):
+        self.zi = pd.Series([self.m0], index=[pd.Timestamp("1970-01-01")])
 
     def fit(self, X, y):
         self.model_ = LinearRegression(self.intercept)
@@ -24,10 +29,38 @@ class EWMAChart:
 
     def predict(self, X, y):
         x = (self.model_.predict(X) - y).squeeze()
-        x_with_m0 = pd.concat([pd.Series([self.m0], index=[-1]), x])
-        zi = x_with_m0.ewm(alpha=self.lambda_ewma, adjust=False).mean().iloc[1:]
+        # x_with_m0 = pd.concat([pd.Series([self.m0], index=[-1]), x])
+        # zi = x_with_m0.ewm(alpha=self.lambda_ewma, adjust=False).mean().iloc[1:]
 
-        return None
+        self.zi = pd.concat([self.zi, x]).sort_index()
+        self.zi = self.zi.loc[~self.zi.index.duplicated(keep="last")]
+        zi_ewm_start = self.zi.index.get_loc(X.index[0]) - 1
+        zi_ewm_stop = self.zi.index.get_loc(X.index[-1])
+        new_zi_m1 = self.zi.iloc[zi_ewm_start : zi_ewm_stop + 1]
+        self.zi.iloc[zi_ewm_start : zi_ewm_stop + 1] = new_zi_m1.ewm(
+            alpha=self.lambda_ewma, adjust=False
+        ).mean()
+
+        uncertain_term = []
+        for t_stamp in X.index:
+            i = self.zi.index.get_loc(t_stamp)
+            uncertain_term.append(
+                self.L
+                * self.s0_
+                * np.sqrt(self.lambda_ewma / (2 - self.lambda_ewma))
+                * np.sqrt(1 - (1 - self.lambda_ewma) ** (2 * i))
+            )
+
+        uncertain_term = np.array(uncertain_term)
+
+        return pd.DataFrame(
+            {
+                "zi": self.zi.loc[X.index],
+                "Lcs": self.m0 + uncertain_term,
+                "Lci": self.m0 - uncertain_term,
+            },
+            index=X.index,
+        )
 
     #
     # def transform(self, ):

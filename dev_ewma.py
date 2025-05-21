@@ -22,14 +22,39 @@ test_data = pd.read_csv(
 
 
 # %%
-ewma_chart = EWMAChart(0, 10, -10, intercept=True)
+ewma_chart = EWMAChart(0, 3, -3, intercept=True)
 ewma_chart.fit(test_data[["DJU__C"]], test_data[["Consumption__kWh"]])
 
+# %%
+ewma_chart.predict(test_data[["DJU__C"]], test_data[["Consumption__kWh"]]).plot()
+plt.show()
+
+# %%
+ewma_chart.predict(
+    test_data.loc[:"2010-12-01", ["DJU__C"]],
+    test_data.loc[:"2010-12-01":, ["Consumption__kWh"]]
+)
+
 #%%
-ewma_chart.predict(test_data[["DJU__C"]], test_data[["Consumption__kWh"]])
+ewma_chart.predict(
+    test_data.loc["2010-12-01":, ["DJU__C"]],
+    test_data.loc["2010-12-01":, ["Consumption__kWh"]]
+).plot()
+plt.show()
+
+
+#%%
+ewma_chart.predict(
+    test_data.loc["2011-02":, ["DJU__C"]],
+    test_data.loc["2011-02":, ["Consumption__kWh"]]
+)
 # %%
 line_reg = LinearRegression(intercept=True)
 line_reg.fit(test_data[["DJU__C"]], test_data[["Consumption__kWh"]])
+
+# %%
+line_reg.predict(test_data[["DJU__C"]], test_data[["Consumption__kWh"]])
+
 
 # %%
 plt.figure()
